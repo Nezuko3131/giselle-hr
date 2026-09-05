@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GISELLE - HR System</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:14px}
+body{font-family:Segoe UI,Arial,sans-serif;background:#f4f6f9;color:#222;min-height:100vh}
+@media(max-width:768px){
+html{font-size:12px}
+.stat-row{flex-direction:column;gap:8px;padding:10px}
+.stat-card{min-width:100%}
+.filters{flex-direction:column;gap:8px}
+.filter-input{width:100%}
+.filter-count{margin-left:0}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{min-width:600px;font-size:10px}
+th,td{padding:6px 4px;word-break:break-word}
+.topbar{padding:0 10px;height:50px}
+.topbar-brand{font-size:12pt}
+.topbar-nav{gap:2px}
+.topbar-btn{padding:6px 8px;font-size:9pt}
+.page-section.active{display:block;overflow-x:auto}
+}
+:root{--navy:#0a1628;--gold:#d4af37;--white:#fff;--danger:#e74c3c;--success:#27ae60}
+body{font-family:Segoe UI,Arial,sans-serif;background:#f4f6f9;color:#222;min-height:100vh}
+.topbar{background:var(--navy);color:var(--white);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.topbar-brand{font-size:16pt;font-weight:bold;letter-spacing:1px}
+.topbar-brand span{color:var(--gold)}
+.topbar-nav{display:flex;gap:4px}
+.topbar-btn{background:none;border:none;color:#aaa;font-size:11pt;padding:8px 14px;cursor:pointer;border-radius:6px;text-transform:uppercase}
+.topbar-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
+.topbar-btn.active{background:#f1c40f;color:var(--navy);font-weight:bold}
+.topbar-user{font-size:11pt;color:#888;cursor:pointer}
+.main{padding-top:72px;padding-bottom:40px}
+.stat-row{display:flex;flex-wrap:wrap;gap:16px;padding:20px;max-width:1400px;margin:0 auto}
+.stat-card{background:#fff;border-radius:12px;padding:18px 20px;min-width:180px;flex:1;border-left:4px solid var(--gold);box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.stat-label{font-size:10pt;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.stat-value{font-size:28pt;font-weight:bold;color:var(--navy)}
+.stat-sub{font-size:10pt;color:#888}
+.section-title{font-size:14pt;font-weight:bold;color:var(--navy);padding:16px 20px 8px;max-width:1400px;margin:0 auto;text-align:center}
+.filters{display:flex;gap:12px;padding:0 20px 12px;max-width:1400px;margin:0 auto;flex-wrap:wrap;align-items:center}
+.filter-input,.filter-select{padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:11pt;background:#fff}
+.filter-input{width:200px}
+.filter-count{font-size:11pt;color:#888;margin-left:auto}
+.table-wrap{padding:0 20px 20px;max-width:1400px;margin:0 auto;overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);min-width:900px}
+thead{background:var(--navy);color:#fff}
+th{padding:12px 14px;text-align:left;font-size:10pt;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;white-space:nowrap}
+td{padding:10px 14px;font-size:11pt;border-bottom:1px solid #eee}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8f9fa}
+.badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:9pt;font-weight:bold;text-transform:uppercase}
+.badge-yes{background:#d4edda;color:#155724}
+.badge-no{background:#f8d7da;color:#721c24}
+.badge-dom{background:#cce5ff;color:#004085}
+.badge-ext{background:#fff3cd;color:#856404}
+.badge-blacklist{background:#721c24;color:#fff;font-weight:bold}
+.proj-tag{display:inline-block;background:var(--navy);color:#fff;padding:2px 8px;border-radius:4px;font-size:9pt}
+.loc-tag{display:inline-block;color:#fff;padding:2px 8px;border-radius:4px;font-size:9pt}
+.cat-tag{display:inline-block;color:#fff;padding:2px 8px;border-radius:4px;font-size:9pt;font-weight:bold}
+.view-btn{background:#f8f9fa;border:1px solid #ddd;padding:4px 10px;border-radius:6px;font-size:10pt;cursor:pointer}
+.view-btn:hover{background:var(--gold)}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;padding:0 20px 20px;max-width:1400px;margin:0 auto}
+.proj-card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-top:4px solid var(--gold);cursor:pointer}
+.proj-name{font-size:13pt;font-weight:bold;color:var(--navy);margin-bottom:4px}
+.proj-dept{font-size:10pt;color:#888;text-transform:uppercase;margin-bottom:12px}
+.proj-stat-val{font-size:18pt;font-weight:bold;color:var(--navy)}
+.proj-stat-lbl{font-size:9pt;color:#888}
+.page-section{display:none}
+.page-section.active{display:block}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;justify-content:center;align-items:center;padding:10px}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:16px;padding:15px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+@media(max-width:768px){
+.modal{width:95%;padding:10px;max-height:85vh;border-radius:8px}
+.form-row{flex-direction:column;gap:8px}
+.form-group{min-width:100%}
+.form-group input,.form-group select{width:100%;min-width:unset}
+.btn{padding:8px 14px;font-size:10pt;width:100%;margin-bottom:5px}
+}
+.modal-title{font-size:16pt;font-weight:bold;color:var(--navy);margin-bottom:16px}
+.detail-row{display:flex;border-bottom:1px solid #eee;padding:8px 0}
+.detail-label{font-size:10pt;color:#888;width:140px;text-transform:uppercase}
+.detail-value{font-size:11pt;flex:1}
+.no-data{text-align:center;padding:60px 20px;color:#888;font-size:13pt}
+.loading{text-align:center;padding:60px 20px;color:#888;font-size:13pt}
+.admin-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:5000;padding:20px;overflow-y:auto}
+.admin-modal.active{display:block}
+.admin-login{background:#fff;border-radius:16px;max-width:350px;margin:100px auto;padding:40px;text-align:center;position:relative}
+.modal-close{position:absolute;top:8px;right:12px;background:#eee;border:none;font-size:14pt;cursor:pointer;width:28px;height:28px;border-radius:50%}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:11pt}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-success{background:#27ae60;color:#fff}
+.btn-danger{background:#e74c3c;color:#fff}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-brand">GISELLE <span>HR</span></div>
+  <div class="topbar-nav">
+    <button class="topbar-btn" onclick="showPage('dashboard',this)">Dashboard</button>
+    <button class="topbar-btn" onclick="showPage('training',this)"><span style="display:inline-block;width:8px;height:8px;background:#f1c40f;border-radius:50%;margin-right:6px;"></span>Capacitacion</button>
+    <button class="topbar-btn" onclick="showPage('employees',this)"><span style="display:inline-block;width:8px;height:8px;background:#27ae60;border-radius:50%;margin-right:6px;"></span>Empleados</button>
+    <button class="topbar-btn" onclick="showPage('fired',this)"><span style="display:inline-block;width:8px;height:8px;background:#e74c3c;border-radius:50%;margin-right:6px;"></span>Despedidos</button>
+    <button class="topbar-btn" onclick="showPage('blacklist',this)"><span style="display:inline-block;width:8px;height:8px;background:#2c3e50;border-radius:50%;margin-right:6px;"></span>Lista Negra</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button id="btn-add" style="background:#27ae60;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:12pt;font-weight:bold;cursor:pointer;display:none;" onclick="openAddModal()">+ Anadir</button>
+    <div class="topbar-user" id="admin-btn" onclick="openAdmin()">Admin</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="loading" id="loading">Cargando datos...</div>
+  <div class="page-section" id="page-dashboard">
+    <div class="stat-row" id="stats-container"></div>
+    <div class="section-title">Resumen por Proyecto</div>
+    <div class="proj-grid" id="projects-grid"></div>
+  </div>
+  <div class="page-section" id="page-employees">
+    <div class="section-title"><span style="display:inline-block;width:10px;height:10px;background:#27ae60;border-radius:50%;margin-right:8px;"></span>Empleados Activos</div>
+    <div class="filters">
+      <input type="text" class="filter-input" placeholder="Buscar..." id="emp-search" oninput="filterEmployees()">
+      <select class="filter-select" id="emp-project" onchange="filterEmployees()"><option value="">Todos Proyectos</option></select>
+      <select class="filter-select" id="emp-insurance" onchange="filterEmployees()"><option value="">Seguro: Todos</option><option value="Yes">Seguro: Si</option><option value="No">Seguro: No</option></select>
+      <select class="filter-select" id="emp-nationality" onchange="filterEmployees()"><option value="">Nacionalidad: Todas</option><option value="DOM">Dominicanos</option><option value="EXT">Extranjeros</option></select>
+      <span class="filter-count" id="emp-count"></span>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Cedula</th><th>Fecha Ingreso</th><th>Proyecto</th><th>Categoria</th><th>Stage</th><th>Seguro</th><th>Nac.</th><th>Ubicacion</th><th>Notas</th><th></th></tr></thead><tbody id="emp-tbody"></tbody></table></div>
+  </div>
+  <div class="page-section" id="page-fired">
+    <div class="section-title"><span style="display:inline-block;width:10px;height:10px;background:#e74c3c;border-radius:50%;margin-right:8px;"></span>Empleados Despedidos</div>
+    <div class="filters"><input type="text" class="filter-input" placeholder="Buscar..." id="fired-search" oninput="filterFired()"><select class="filter-select" id="fired-project" onchange="filterFired()"><option value="">Todos</option></select><span class="filter-count" id="fired-count"></span></div>
+    <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Cedula</th><th>Proyecto</th><th>Ingreso</th><th>Salida</th><th>Notas</th></tr></thead><tbody id="fired-tbody"></tbody></table></div>
+  </div>
+  <div class="page-section" id="page-blacklist">
+    <div class="section-title"><span style="display:inline-block;width:10px;height:10px;background:#2c3e50;border-radius:50%;margin-right:8px;"></span>Lista Negra</div>
+    <div class="filters"><input type="text" class="filter-input" placeholder="Buscar..." id="bl-search" oninput="filterBlacklist()"><span class="filter-count" id="bl-count"></span></div>
+    <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Cedula</th><th>Proyecto</th><th>Nac.</th><th>Ingreso</th><th>Salida</th><th>Notas</th></tr></thead><tbody id="bl-tbody"></tbody></table></div>
+  </div>
+  <div class="page-section" id="page-training">
+    <div class="section-title"><span style="display:inline-block;width:10px;height:10px;background:#f1c40f;border-radius:50%;margin-right:8px;"></span>Capacitacion</div>
+    <div class="filters">
+      <input type="text" class="filter-input" placeholder="Buscar..." id="cap-search" oninput="filterTraining()">
+      <select class="filter-select" id="cap-status" onchange="filterTraining()"><option value="">Todos</option><option value="training">En Entrenamiento</option><option value="working">Trabajando</option><option value="fired">Despedidos</option></select>
+      <span class="filter-count" id="cap-count"></span>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Stage</th><th>Posicion</th><th>Proyecto</th><th>Cedula</th><th>Ubicacion</th><th>Fecha Ingreso</th><th>Fecha Salida</th><th>Notas</th></tr></thead><tbody id="cap-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="detail-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><button class="modal-close" onclick="closeModal()">x</button><div id="modal-content"></div></div>
+</div>
+
+<div class="admin-modal" id="admin-modal" onclick="if(event.target===this)closeAdmin()">
+  <div class="admin-login">
+    <button class="modal-close" onclick="closeAdmin()">x</button>
+    <h2 style="color:var(--navy);margin-bottom:20px;">Admin</h2>
+    <input type="password" id="admin-password" placeholder="Password..." onkeypress="if(event.key==='Enter')checkAdminPassword()" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14pt;margin-bottom:16px;text-align:center;">
+    <button class="btn btn-primary" onclick="checkAdminPassword()" style="width:100%;">Entrar</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal" style="max-width:700px;"><button class="modal-close" onclick="closeEditModal()">x</button><div id="edit-modal-content"></div></div>
+</div>
+
+<div class="modal-overlay" id="add-modal" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal" style="max-width:700px;"><button class="modal-close" onclick="closeAddModal()">x</button><div id="add-modal-content"></div></div>
+</div>
+
+<script>
+let allEmployees=[],trainingEmployees=[],firedEmployees=[],blacklistEmployees=[],transferredEmployees=[];
+let isAdmin=false;
+
+const PROJECTS=[
+  {name:'ILA SALES',dept:'Sales',color:'#0984e3'},
+  {name:'CAMILO SALES',dept:'Sales',color:'#d63031'},
+  {name:'THOMAS',dept:'Sales',color:'#6c5ce7'},
+  {name:'THOMAS PRINT.',dept:'Sales',color:'#e17055'},
+  {name:'THOMAS RT',dept:'Retention',color:'#00b894'},
+  {name:'ILA RT',dept:'Retention',color:'#fd79a8'},
+  {name:'CAMILO RT',dept:'Retention',color:'#fdcb6e'},
+  {name:'AESD',dept:'Retention',color:'#e84393'},
+  {name:'DAVID',dept:'Sales',color:'#d35400'},
+  {name:'PRINTERIA INGLES',dept:'Sales',color:'#a29bfe'},
+  {name:'ADM-CLEANING',dept:'Other',color:'#636e72'},
+];
+const ADMIN_PASSWORD='Lana31$9400@';
+
+function getProjColor(n){if(!n)return'#0a1628';const p=PROJECTS.find(x=>x.name.toLowerCase()===n.toLowerCase());return p?p.color:'#0a1628';}
+function getCatColor(c){const m={'Sales Manager':'#8e44ad','Head':'#2c3e50','Team Leader':'#16a085','Retention':'#d35400','Agent':'#2980b9'};return m[c]||'#7f8c8d';}
+function getLocColor(l){const m={'Edif. Cellinl':'#2ecc71','Mirador':'#e74c3c','Torre Empresarial RH':'#9b59b6','Printeria':'#e67e22'};return m[l]||'#7f8c8d';}
+
+function formatDate(ds){
+  if(!ds)return'';
+  if(ds.includes(',')&&ds.includes(' '))return ds;
+  const mo=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const p=ds.split('-');
+  if(p.length===3){
+    const y=parseInt(p[0]),m=parseInt(p[1])-1,d=parseInt(p[2]);
+    if(m>=0&&m<=11&&y>1900&&d>0&&d<=31)return mo[m]+' '+d+', '+y;
+  }
+  return ds;
+}
+
+function getDateInput(ds){
+  if(!ds)return'';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(ds))return ds;
+  const mo=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const m=ds.match(/^(\w+)\s+(\d+),\s+(\d+)$/);
+  if(m){
+    const i=mo.indexOf(m[1]);
+    if(i>=0)return m[3]+'-'+String(i+1).padStart(2,'0')+'-'+String(m[2]).padStart(2,'0');
+  }
+  return'';
+}
+
+function showPage(p,b){
+  document.querySelectorAll('.page-section').forEach(e=>e.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.topbar-btn').forEach(e=>e.classList.remove('active'));
+  if(b)b.classList.add('active');
+  localStorage.setItem('hrTab',p);
+}
+
+function closeModal(){document.getElementById('detail-modal').classList.remove('active');}
+function closeAdmin(){document.getElementById('admin-modal').classList.remove('active');}
+function closeEditModal(){document.getElementById('edit-modal').classList.remove('active');}
+function closeAddModal(){document.getElementById('add-modal').classList.remove('active');}
+
+function openAdmin(){document.getElementById('admin-modal').classList.add('active');}
+
+function checkAdminPassword(){
+  if(document.getElementById('admin-password').value===ADMIN_PASSWORD){
+    isAdmin=true;
+    localStorage.setItem('hrAdmin','true');
+    document.getElementById('admin-modal').classList.remove('active');
+    document.getElementById('admin-btn').textContent='Admin';
+    document.getElementById('btn-add').style.display='block';
+    renderAll();
+  }else{alert('Password incorrecta');}
+}
+
+function initAdminState(){
+  if(localStorage.getItem('hrAdmin')==='true'){
+    isAdmin=true;
+    document.getElementById('admin-btn').textContent='Admin';
+    document.getElementById('btn-add').style.display='block';
+  }
+}
+
+function showInlineMessage(m,t){
+  const e=document.getElementById('inline-msg');
+  if(e)e.remove();
+  const d=document.createElement('div');
+  d.id='inline-msg';
+  d.textContent=m;
+  d.style.cssText='position:fixed;top:80px;right:20px;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:12pt;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+  d.style.background=t==='success'?'#27ae60':t==='error'?'#e74c3c':'#f1c40f';
+  d.style.color=t==='success'||t==='error'?'#fff':'#000';
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),3000);
+}
+
+function openEditModal(n,s){
+  let e;
+  if(s==='employee')e=allEmployees.find(x=>x.name===n);
+  else if(s==='fired')e=firedEmployees.find(x=>x.name===n);
+  else if(s==='blacklist')e=blacklistEmployees.find(x=>x.name===n);
+  else if(s==='training')e=trainingEmployees.find(x=>x.name===n);
+  if(!e){alert('No encontrado');return;}
+  
+  let h='<div class="modal-title">Editando: '+e.name+'</div>';
+  
+  if(s==='training'){
+    h+='<div style="margin-bottom:16px;"><label style="font-size:10pt;color:#888;">Cambiar Status:</label>';
+    h+='<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">';
+    h+='<button class="btn" style="background:#27ae60;color:#fff;" onclick="changeStatus(\''+n.replace(/'/g,"\\'")+'\',\'training\',\'working\')">Trabajando</button>';
+    h+='<button class="btn" style="background:#e74c3c;color:#fff;" onclick="changeStatus(\''+n.replace(/'/g,"\\'")+'\',\'training\',\'fired\')">Despedir</button>';
+    h+='<button class="btn" style="background:#721c24;color:#fff;" onclick="changeStatus(\''+n.replace(/'/g,"\\'")+'\',\'training\',\'blacklist\')">Lista Negra</button></div></div>';
+    h+='<div class="form-group"><label>Nombre</label><input type="text" id="edit2-name"></div>';
+    h+='<div class="form-group"><label>Cedula</label><input type="text" id="edit2-cedula"></div>';
+    h+='<div class="form-group"><label>Proyecto</label><select id="edit2-project"><option value="">Seleccionar...</option><option>ILA SALES</option><option>CAMILO SALES</option><option>THOMAS</option><option>THOMAS RT</option><option>ILA RT</option><option>CAMILO RT</option><option>AESD</option><option>DAVID</option><option>PRINTERIA INGLES</option><option>ADM-CLEANING</option></select></div>';
+    h+='<div class="form-group"><label>Stage</label><input type="text" id="edit2-stage"></div>';
+    h+='<div class="form-group"><label>Posicion</label><select id="edit2-position"><option value="">Seleccionar...</option><option>Sales Manager</option><option>Head</option><option>Team Leader</option><option>Retention</option><option>Agent</option></select></div>';
+    h+='<div class="form-group"><label>Ubicacion</label><input type="text" id="edit2-location"></div>';
+    h+='<div class="form-group"><label>Fecha Ingreso</label><input type="date" id="edit2-date"></div>';
+    h+='<div style="font-size:10pt;color:#666;margin-bottom:8px;">Fecha actual: <strong>'+(e.fechaEmpleo||'No registrada')+'</strong></div>';
+    h+='<div class="form-group"><label>Status</label><select id="edit2-status"><option value="training">En Entrenamiento</option><option value="working">Trabajando</option><option value="fired">Despedido</option></select></div>';
+    h+='<div class="form-group"><label>Notas</label><input type="text" id="edit2-notes" value="'+(e.comentario||'')+'"></div>';
+    h+='<button class="btn btn-success" onclick="saveEdit(\'training\',\''+n.replace(/'/g,"\\'")+'\')">Guardar</button>';
+  }else{
+    h+='<div style="margin-bottom:16px;"><label style="font-size:10pt;color:#888;">Cambiar Status:</label>';
+    h+='<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">';
+    h+='<button class="btn" style="background:#f1c40f;color:#000;" onclick="changeStatus(\''+n.replace(/'/g,"\\'")+'\',\'employee\',\'training\')">Capacitacion</button>';
+    h+='<button class="btn" style="background:#e74c3c;color:#fff;" onclick="changeStatus(\''+n.replace(/'/g,"\\'")+'\',\'employee\',\'fired\')">Despedir</button>';
+    h+='<button class="btn" style="background:#721c24;color:#fff;" onclick="changeStatus(\''+n.replace(/'/g,"\\'")+'\',\'employee\',\'blacklist\')">Lista Negra</button></div></div>';
+    h+='<div class="form-group"><label>Nombre</label><input type="text" id="edit2-name"></div>';
+    h+='<div class="form-group"><label>Cedula</label><input type="text" id="edit2-cedula"></div>';
+    h+='<div class="form-group"><label>Proyecto</label><select id="edit2-project"><option value="">Seleccionar...</option><option>ILA SALES</option><option>CAMILO SALES</option><option>THOMAS</option><option>THOMAS RT</option><option>ILA RT</option><option>CAMILO RT</option><option>AESD</option><option>DAVID</option><option>PRINTERIA INGLES</option><option>ADM-CLEANING</option></select></div>';
+    h+='<div class="form-group"><label>Categoria</label><select id="edit2-category"><option value="">Seleccionar...</option><option>Sales Manager</option><option>Head</option><option>Team Leader</option><option>Retention</option><option>Agent</option></select></div>';
+    h+='<div class="form-group"><label>Stage</label><input type="text" id="edit2-stage"></div>';
+    h+='<div class="form-group"><label>Seguro</label><select id="edit2-insurance"><option value="Yes">Si</option><option value="No">No</option></select></div>';
+    h+='<div class="form-group"><label>Nacionalidad</label><select id="edit2-nationality"><option value="DOM">Dominicano</option><option value="EXT">Extranjero</option></select></div>';
+    h+='<div class="form-group"><label>Ubicacion</label><input type="text" id="edit2-location"></div>';
+    h+='<div class="form-group"><label>Fecha Ingreso</label><input type="date" id="edit2-date"></div>';
+    h+='<div style="font-size:10pt;color:#666;margin-bottom:8px;">Fecha actual: <strong>'+(e.date||'No registrada')+'</strong></div>';
+    h+='<div class="form-group"><label>Notas</label><input type="text" id="edit2-notes" value="'+(e.notes||'')+'"></div>';
+    h+='<button class="btn btn-success" onclick="saveEdit(\'employee\',\''+n.replace(/'/g,"\\'")+'\')">Guardar</button>';
+  }
+  
+  document.getElementById('edit-modal-content').innerHTML=h;
+  
+  if(s==='training'){
+    document.getElementById('edit2-name').value=e.name||'';
+    document.getElementById('edit2-cedula').value=e.cedula||'';
+    document.getElementById('edit2-project').value=e.project||'';
+    document.getElementById('edit2-stage').value=e.stageName||'';
+    document.getElementById('edit2-position').value=e.position||'';
+    document.getElementById('edit2-location').value=e.ubicacion||'';
+    document.getElementById('edit2-date').value=getDateInput(e.fechaEmpleo)||'';
+    document.getElementById('edit2-status').value=e.status||'training';
+    document.getElementById('edit2-notes').value=e.comentario||'';
+  }else{
+    document.getElementById('edit2-name').value=e.name||'';
+    document.getElementById('edit2-cedula').value=e.cedula||'';
+    document.getElementById('edit2-project').value=e.project||'';
+    document.getElementById('edit2-category').value=e.category||'';
+    document.getElementById('edit2-stage').value=e.stage||'';
+    document.getElementById('edit2-insurance').value=e.insurance||'Yes';
+    document.getElementById('edit2-nationality').value=e.nationality||'DOM';
+    document.getElementById('edit2-location').value=e.location||'';
+    document.getElementById('edit2-date').value=getDateInput(e.date)||'';
+    document.getElementById('edit2-notes').value=e.notes||'';
+  }
+  
+  document.getElementById('edit-modal').classList.add('active');
+}
+
+function changeStatus(n,fs,ts){
+  let e;
+  if(fs==='employee')e=allEmployees.find(x=>x.name===n);
+  else if(fs==='fired')e=firedEmployees.find(x=>x.name===n);
+  else if(fs==='blacklist')e=blacklistEmployees.find(x=>x.name===n);
+  else if(fs==='training')e=trainingEmployees.find(x=>x.name===n);
+  if(!e)return;
+  
+  if(fs==='employee')allEmployees=allEmployees.filter(x=>x.name!==n);
+  else if(fs==='fired')firedEmployees=firedEmployees.filter(x=>x.name!==n);
+  else if(fs==='blacklist')blacklistEmployees=blacklistEmployees.filter(x=>x.name!==n);
+  else if(fs==='training')trainingEmployees=trainingEmployees.filter(x=>x.name!==n);
+  
+  if(ts==='employee')allEmployees.push({name:e.name,cedula:e.cedula,project:e.project,category:e.category,stage:e.stage,insurance:e.insurance,nationality:e.nationality,location:e.location,date:e.date,notes:e.notes});
+  else if(ts==='training')trainingEmployees.push({name:e.name,stageName:'',position:e.category||'',project:e.project,cedula:e.cedula,ubicacion:e.location||'',fechaEmpleo:e.date||'',fechaDespido:'',comentario:e.notes||'',status:'training'});
+  else if(ts==='fired')firedEmployees.push({name:e.name,cedula:e.cedula,project:e.project,startDate:e.date||'',lastDay:new Date().toLocaleDateString(),notes:e.notes||''});
+  else if(ts==='blacklist')blacklistEmployees.push({name:e.name,cedula:e.cedula,project:e.project,nationality:e.nationality||'DOM',date:e.date||'',lastDay:new Date().toLocaleDateString(),notes:e.notes||''});
+  
+  saveData();
+  renderAll();
+  closeEditModal();
+  showInlineMessage('Empleado movido a '+(ts==='employee'?'Activos':ts==='training'?'Capacitacion':ts==='fired'?'Despedidos':'Lista Negra'),'success');
+}
+
+function saveEdit(s,on){
+  const n=document.getElementById('edit2-name').value.trim();
+  const p=document.getElementById('edit2-project').value;
+  if(!n||!p){showInlineMessage('Nombre y Proyecto son requeridos','error');return;}
+  
+  if(s==='training'){
+    const i=trainingEmployees.findIndex(x=>x.name===on);
+    console.log('Training save - looking for:',on,'found at:',i);
+    if(i>=0){
+      trainingEmployees[i]={
+        name:n,
+        stageName:document.getElementById('edit2-stage').value,
+        position:document.getElementById('edit2-position').value,
+        project:p,
+        cedula:document.getElementById('edit2-cedula').value,
+        ubicacion:document.getElementById('edit2-location').value,
+        fechaEmpleo:document.getElementById('edit2-date').value,
+        fechaDespido:document.getElementById('edit2-status').value==='fired'?new Date().toLocaleDateString():'',
+        comentario:document.getElementById('edit2-notes').value,
+        status:document.getElementById('edit2-status').value
+      };
+      console.log('Training updated:',trainingEmployees[i]);
+    }else{
+      // Try to add as new
+      trainingEmployees.push({
+        name:n,
+        stageName:document.getElementById('edit2-stage').value,
+        position:document.getElementById('edit2-position').value,
+        project:p,
+        cedula:document.getElementById('edit2-cedula').value,
+        ubicacion:document.getElementById('edit2-location').value,
+        fechaEmpleo:document.getElementById('edit2-date').value,
+        fechaDespido:'',
+        comentario:document.getElementById('edit2-notes').value,
+        status:document.getElementById('edit2-status').value
+      });
+    }
+  }else{
+    const i=allEmployees.findIndex(x=>x.name===on);
+    console.log('Employee save - looking for:',on,'found at:',i);
+    if(i>=0){
+      allEmployees[i]={
+        name:n,
+        cedula:document.getElementById('edit2-cedula').value,
+        project:p,
+        category:document.getElementById('edit2-category').value,
+        stage:document.getElementById('edit2-stage').value,
+        insurance:document.getElementById('edit2-insurance').value,
+        nationality:document.getElementById('edit2-nationality').value,
+        location:document.getElementById('edit2-location').value,
+        date:document.getElementById('edit2-date').value,
+        notes:document.getElementById('edit2-notes').value
+      };
+      console.log('Employee updated:',allEmployees[i]);
+    }
+  }
+  
+  saveData();
+  renderAll();
+  closeEditModal();
+  showInlineMessage('Cambios guardados','success');
+}
+
+function openAddModal(){
+  let h='<div class="modal-title">Anadir Empleado</div>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:16px;">';
+  h+='<button class="btn" style="background:#27ae60;color:#fff;" id="add-tab-emp" onclick="switchAddTab2(\'emp\')">Empleado</button>';
+  h+='<button class="btn" style="background:#ddd;" id="add-tab-cap" onclick="switchAddTab2(\'cap\')">Capacitacion</button></div>';
+  h+='<div id="add-form-emp">';
+  h+='<div class="form-group"><label>Nombre *</label><input type="text" id="add-name" placeholder="Nombre completo"></div>';
+  h+='<div class="form-group"><label>Cedula</label><input type="text" id="add-cedula" placeholder="XXX-XXXXXXX-X"></div>';
+  h+='<div class="form-group"><label>Proyecto *</label><select id="add-project"><option value="">Seleccionar...</option><option>ILA SALES</option><option>CAMILO SALES</option><option>THOMAS</option><option>THOMAS RT</option><option>ILA RT</option><option>CAMILO RT</option><option>AESD</option><option>DAVID</option><option>PRINTERIA INGLES</option><option>ADM-CLEANING</option></select></div>';
+  h+='<div class="form-group"><label>Categoria</label><select id="add-category"><option value="">Seleccionar...</option><option>Sales Manager</option><option>Head</option><option>Team Leader</option><option>Retention</option><option>Agent</option></select></div>';
+  h+='<div class="form-group"><label>Stage</label><input type="text" id="add-stage" placeholder="Nombre del stage"></div>';
+  h+='<div class="form-group"><label>Seguro</label><select id="add-insurance"><option value="Yes">Si</option><option value="No">No</option></select></div>';
+  h+='<div class="form-group"><label>Nacionalidad</label><select id="add-nationality"><option value="DOM">Dominicano</option><option value="EXT">Extranjero</option></select></div>';
+  h+='<div class="form-group"><label>Ubicacion</label><input type="text" id="add-location" placeholder="Edificio/Torre"></div>';
+  h+='<div class="form-group"><label>Fecha Ingreso</label><input type="date" id="add-date"></div>';
+  h+='<div class="form-group"><label>Notas</label><input type="text" id="add-notes" placeholder="Notas..."></div>';
+  h+='<button class="btn btn-success" onclick="doAddEmployee()">Agregar</button></div>';
+  h+='<div id="add-form-cap" style="display:none;">';
+  h+='<div class="form-group"><label>Nombre *</label><input type="text" id="add-cap-name" placeholder="Nombre completo"></div>';
+  h+='<div class="form-group"><label>Cedula</label><input type="text" id="add-cap-cedula" placeholder="XXX-XXXXXXX-X"></div>';
+  h+='<div class="form-group"><label>Proyecto *</label><select id="add-cap-project"><option value="">Seleccionar...</option><option>ILA SALES</option><option>CAMILO SALES</option><option>THOMAS</option><option>THOMAS RT</option><option>ILA RT</option><option>CAMILO RT</option><option>AESD</option><option>DAVID</option><option>PRINTERIA INGLES</option><option>ADM-CLEANING</option></select></div>';
+  h+='<div class="form-group"><label>Stage</label><input type="text" id="add-cap-stage" placeholder="Nombre del stage"></div>';
+  h+='<div class="form-group"><label>Posicion</label><select id="add-cap-position"><option value="">Seleccionar...</option><option>Sales Manager</option><option>Head</option><option>Team Leader</option><option>Retention</option><option>Agent</option></select></div>';
+  h+='<div class="form-group"><label>Ubicacion</label><input type="text" id="add-cap-location" placeholder="Edificio/Torre"></div>';
+  h+='<div class="form-group"><label>Fecha Ingreso</label><input type="date" id="add-cap-date"></div>';
+  h+='<div class="form-group"><label>Status</label><select id="add-cap-status"><option value="training">En Entrenamiento</option><option value="working">Trabajando</option><option value="fired">Despedido</option></select></div>';
+  h+='<div class="form-group"><label>Notas</label><input type="text" id="add-cap-notes" placeholder="Notas..."></div>';
+  h+='<button class="btn btn-success" onclick="doAddTraining()">Agregar</button></div>';
+  
+  document.getElementById('add-modal-content').innerHTML=h;
+  document.getElementById('add-modal').classList.add('active');
+}
+
+function switchAddTab2(t){
+  document.getElementById('add-tab-emp').style.background=t==='emp'?'#27ae60':'#ddd';
+  document.getElementById('add-tab-emp').style.color=t==='emp'?'#fff':'#000';
+  document.getElementById('add-tab-cap').style.background=t==='cap'?'#27ae60':'#ddd';
+  document.getElementById('add-tab-cap').style.color=t==='cap'?'#fff':'#000';
+  document.getElementById('add-form-emp').style.display=t==='emp'?'block':'none';
+  document.getElementById('add-form-cap').style.display=t==='cap'?'block':'none';
+}
+
+function doAddEmployee(){
+  const n=document.getElementById('add-name').value.trim();
+  const p=document.getElementById('add-project').value;
+  if(!n||!p){showInlineMessage('Nombre y Proyecto son requeridos','error');return;}
+  allEmployees.push({name:n,cedula:document.getElementById('add-cedula').value.trim(),project:p,category:document.getElementById('add-category').value,stage:document.getElementById('add-stage').value.trim(),insurance:document.getElementById('add-insurance').value,nationality:document.getElementById('add-nationality').value,location:document.getElementById('add-location').value.trim(),date:document.getElementById('add-date').value,notes:document.getElementById('add-notes').value.trim()});
+  saveData();
+  renderAll();
+  closeAddModal();
+  showInlineMessage('Empleado agregado','success');
+}
+
+function doAddTraining(){
+  const n=document.getElementById('add-cap-name').value.trim();
+  const p=document.getElementById('add-cap-project').value;
+  if(!n||!p){showInlineMessage('Nombre y Proyecto son requeridos','error');return;}
+  trainingEmployees.push({name:n,cedula:document.getElementById('add-cap-cedula').value.trim(),project:p,stageName:document.getElementById('add-cap-stage').value.trim(),position:document.getElementById('add-cap-position').value,ubicacion:document.getElementById('add-cap-location').value.trim(),fechaEmpleo:document.getElementById('add-cap-date').value,fechaDespido:'',comentario:document.getElementById('add-cap-notes').value.trim(),status:document.getElementById('add-cap-status').value});
+  saveData();
+  renderAll();
+  closeAddModal();
+  showInlineMessage('Agregado a Capacitacion','success');
+}
+
+function renderDashboard(){
+  const t=allEmployees.length;
+  const dom=allEmployees.filter(e=>e.nationality==='DOM').length;
+  const ext=allEmployees.filter(e=>e.nationality==='EXT').length;
+  const noIns=allEmployees.filter(e=>e.insurance==='No').length;
+  const c=[
+    {label:'Total Empleados',val:t,sub:'Activos',col:'#d4af37'},
+    {label:'Dominicanos',val:dom,sub:ext+' extranjeros',col:'#3498db'},
+    {label:'Sin Seguro',val:noIns,sub:'Ver detalles',col:'#e74c3c',click:true},
+    {label:'Despedidos',val:firedEmployees.length,sub:blacklistEmployees.length+' en lista negra',col:'#9b59b6'},
+  ];
+  let h='<div class="stat-row">';
+  c.forEach(x=>{
+    const st=x.click?'border-left-color:'+x.col+';cursor:pointer;':'border-left-color:'+x.col+';';
+    const oc=x.click?"onclick=\"filterNoInsurance()\"":"";
+    h+='<div class="stat-card" style="'+st+'" '+oc+'><div class="stat-label">'+x.label+'</div><div class="stat-value">'+x.val+'</div><div class="stat-sub">'+x.sub+'</div></div>';
+  });
+  h+='</div>';
+  document.getElementById('stats-container').innerHTML=h;
+  let g='<div class="proj-grid">';
+  PROJECTS.forEach(p=>{
+    const cnt=allEmployees.filter(e=>e.project===p.name).length;
+    g+='<div class="proj-card" style="border-top-color:'+p.color+';" onclick="filterByProject(\''+p.name.replace(/'/g,"\\'")+'\')"><div class="proj-name">'+p.name+'</div><div class="proj-dept" style="color:'+p.color+';">'+p.dept+'</div><div class="proj-stat-val" style="color:'+p.color+';">'+cnt+'</div><div class="proj-stat-lbl">Empleados</div></div>';
+  });
+  g+='</div>';
+  document.getElementById('projects-grid').innerHTML=g;
+}
+
+function renderEmployees(f){
+  const tb=document.getElementById('emp-tbody');
+  const r=f||allEmployees;
+  if(!r.length){tb.innerHTML='<tr><td colspan="11"><div class="no-data">No hay empleados</div></td></tr>';document.getElementById('emp-count').textContent='0 empleados';return;}
+  let h='';
+  r.forEach(e=>{
+    const pc=getProjColor(e.project);
+    const cc=getCatColor(e.category);
+    const ins=e.insurance==='Yes'?'<span class="badge badge-yes">Si</span>':'<span class="badge badge-no">No</span>';
+    const nat=e.nationality==='DOM'?'<span class="badge badge-dom">DOM</span>':'<span class="badge badge-ext">EXT</span>';
+    const cat=e.category?'<span class="cat-tag" style="background:'+cc+';">'+(e.category.length>15?e.category.substring(0,15)+'...':e.category)+'</span>':'-';
+    const editBtn=isAdmin?'<button class="view-btn" style="background:#27ae60;color:#fff;" onclick="openEditModal(\''+e.name.replace(/'/g,"\\'")+'\',\'employee\')">Editar</button>':'<button class="view-btn" onclick="showEmpByName(\''+e.name.replace(/'/g,"\\'")+'\')">Ver</button>';
+    h+='<tr><td><strong>'+e.name+'</strong></td><td>'+(e.cedula||'-')+'</td><td>'+formatDate(e.date)+'</td><td><span class="proj-tag" style="background:'+pc+';">'+e.project+'</span></td><td>'+cat+'</td><td>'+(e.stage||'-')+'</td><td>'+ins+'</td><td>'+nat+'</td><td><span class="loc-tag" style="background:'+getLocColor(e.location)+';">'+(e.location||'-')+'</span></td><td>'+(e.notes||'')+'</td><td>'+editBtn+'</td></tr>';
+  });
+  tb.innerHTML=h;
+  document.getElementById('emp-count').textContent=r.length+' empleados';
+}
+
+function showEmpByName(n){
+  const e=allEmployees.find(x=>x.name===n);
+  if(!e)return;
+  const pc=getProjColor(e.project);
+  let h='<div class="modal-title">'+e.name+'</div>';
+  h+='<div class="detail-row"><div class="detail-label">Cedula</div><div class="detail-value">'+(e.cedula||'-')+'</div></div>';
+  h+='<div class="detail-row"><div class="detail-label">Proyecto</div><div class="detail-value"><span class="proj-tag" style="background:'+pc+';">'+e.project+'</span></div></div>';
+  h+='<div class="detail-row"><div class="detail-label">Categoria</div><div class="detail-value">'+(e.category||'-')+'</div></div>';
+  h+='<div class="detail-row"><div class="detail-label">Stage</div><div class="detail-value">'+(e.stage||'-')+'</div></div>';
+  h+='<div class="detail-row"><div class="detail-label">Seguro</div><div class="detail-value">'+e.insurance+'</div></div>';
+  h+='<div class="detail-row"><div class="detail-label">Nacionalidad</div><div class="detail-value">'+(e.nationality==='DOM'?'Dominicano':'Extranjero')+'</div></div>';
+  h+='<div class="detail-row"><div class="detail-label">Ubicacion</div><div class="detail-value"><span class="loc-tag" style="background:'+getLocColor(e.location)+';">'+(e.location||'-')+'</span></div></div>';
+  h+='<div class="detail-row"><div class="detail-label">Fecha</div><div class="detail-value">'+formatDate(e.date)+'</div></div>';
+  if(e.notes)h+='<div class="detail-row"><div class="detail-label">Notas</div><div class="detail-value" style="color:#f1c40f;font-weight:bold;">'+e.notes+'</div></div>';
+  document.getElementById('modal-content').innerHTML=h;
+  document.getElementById('detail-modal').classList.add('active');
+  if(e.insurance==='No'){
+    document.getElementById('emp-insurance').value='No';
+    filterEmployees();
+    showPage('employees',document.querySelectorAll('.topbar-btn')[2]);
+    closeModal();
+  }
+}
+
+function filterEmployees(){
+  const s=document.getElementById('emp-search').value.toLowerCase();
+  const pj=document.getElementById('emp-project').value;
+  const ins=document.getElementById('emp-insurance').value;
+  const nat=document.getElementById('emp-nationality').value;
+  const f=allEmployees.filter(e=>!s||e.name.toLowerCase().includes(s)||(e.cedula&&e.cedula.includes(s))&&(!pj||e.project===pj)&&(!ins||e.insurance===ins)&&(!nat||e.nationality===nat));
+  renderEmployees(f);
+}
+
+function filterByProject(pn){
+  document.getElementById('emp-project').value=pn;
+  filterEmployees();
+  showPage('employees',document.querySelectorAll('.topbar-btn')[2]);
+}
+
+function filterNoInsurance(){
+  document.getElementById('emp-insurance').value='No';
+  filterEmployees();
+  showPage('employees',document.querySelectorAll('.topbar-btn')[2]);
+}
+
+function renderFired(f){
+  const tb=document.getElementById('fired-tbody');
+  const r=f||firedEmployees;
+  if(!r.length){tb.innerHTML='<tr><td colspan="6"><div class="no-data">No hay empleados despedidos</div></td></tr>';document.getElementById('fired-count').textContent='0 despedidos';return;}
+  const s=[...r].sort((a,b)=>new Date(b.lastDay||b.startDate||0)-new Date(a.lastDay||a.startDate||0));
+  let h='';
+  s.forEach(e=>{
+    const pc=getProjColor(e.project);
+    const editBtn=isAdmin?'<button class="view-btn" style="background:#27ae60;color:#fff;" onclick="openEditModal(\''+e.name.replace(/'/g,"\\'")+'\',\'fired\')">Editar</button>':'';
+    h+='<tr><td><strong>'+e.name+'</strong></td><td>'+e.cedula+'</td><td><span class="proj-tag" style="background:'+pc+';">'+e.project+'</span></td><td>'+formatDate(e.startDate)+'</td><td>'+formatDate(e.lastDay)+'</td><td style="color:#e74c3c;font-weight:bold;">'+(e.notes||'')+'</td><td>'+editBtn+'</td></tr>';
+  });
+  tb.innerHTML=h;
+  document.getElementById('fired-count').textContent=r.length+' despedidos';
+}
+
+function filterFired(){
+  const s=document.getElementById('fired-search').value.toLowerCase();
+  const pj=document.getElementById('fired-project').value;
+  const f=firedEmployees.filter(e=>(!s||e.name.toLowerCase().includes(s))&&(!pj||e.project===pj));
+  renderFired(f);
+}
+
+function renderBlacklist(f){
+  const tb=document.getElementById('bl-tbody');
+  const r=f||blacklistEmployees;
+  if(!r.length){tb.innerHTML='<tr><td colspan="7"><div class="no-data">No hay personas en lista negra</div></td></tr>';document.getElementById('bl-count').textContent='0 en lista negra';return;}
+  let h='';
+  r.forEach(e=>{
+    const c=getProjColor(e.project);
+    const editBtn=isAdmin?'<button class="view-btn" style="background:#27ae60;color:#fff;" onclick="openEditModal(\''+e.name.replace(/'/g,"\\'")+'\',\'blacklist\')">Editar</button>':'';
+    h+='<tr style="border-left:4px solid #721c24;"><td><span class="badge badge-blacklist">'+e.name+'</span></td><td>'+e.cedula+'</td><td><span class="proj-tag" style="background:'+c+';">'+e.project+'</span></td><td><span class="'+(e.nationality==='DOM'?'badge badge-dom':'badge badge-ext')+'">'+e.nationality+'</span></td><td>'+formatDate(e.date)+'</td><td>'+formatDate(e.lastDay)+'</td><td style="color:#721c24;font-weight:bold;">'+(e.notes||'')+'</td><td>'+editBtn+'</td></tr>';
+  });
+  tb.innerHTML=h;
+  document.getElementById('bl-count').textContent=r.length+' en lista negra';
+}
+
+function filterBlacklist(){
+  const s=document.getElementById('bl-search').value.toLowerCase();
+  const f=blacklistEmployees.filter(e=>!s||e.name.toLowerCase().includes(s));
+  renderBlacklist(f);
+}
+
+function renderTraining(f){
+  const tb=document.getElementById('cap-tbody');
+  let r=(f||trainingEmployees).slice().reverse();
+  if(!r.length){tb.innerHTML='<tr><td colspan="9"><div class="no-data">No hay registros</div></td></tr>';document.getElementById('cap-count').textContent='0 registros';return;}
+  let h='';
+  r.forEach(e=>{
+    const pc=getProjColor(e.project);
+    const sc=e.status==='fired'?'#e74c3c':e.status==='working'?'#3498db':'#95a5a6';
+    const sl=e.status==='fired'?'Despedido':e.status==='working'?'Trabajando':'Entrenamiento';
+    const rs=e.status==='fired'?'border-left:4px solid #e74c3c;':e.status==='working'?'border-left:4px solid #3498db;':'border-left:4px solid #95a5a6;';
+    const editBtn=isAdmin?'<button class="view-btn" style="background:#27ae60;color:#fff;" onclick="openEditModal(\''+e.name.replace(/'/g,"\\'")+'\',\'training\')">Editar</button>':'';
+    h+='<tr style="'+rs+'"><td><strong>'+e.name+'</strong> <span style="background:'+sc+';color:#fff;padding:1px 6px;border-radius:8px;font-size:8pt;">'+sl+'</span></td><td>'+e.stageName+'</td><td><span class="cat-tag" style="background:'+getCatColor(e.position)+';">'+e.position+'</span></td><td><span class="proj-tag" style="background:'+pc+';">'+e.project+'</span></td><td>'+e.cedula+'</td><td><span class="loc-tag" style="background:'+getLocColor(e.ubicacion)+';">'+e.ubicacion+'</span></td><td>'+formatDate(e.fechaEmpleo)+'</td><td>'+formatDate(e.fechaDespido)+'</td><td>'+e.comentario+'</td><td>'+editBtn+'</td></tr>';
+  });
+  tb.innerHTML=h;
+  document.getElementById('cap-count').textContent=r.length+' registros';
+}
+
+function filterTraining(){
+  const s=document.getElementById('cap-search').value.toLowerCase();
+  const st=document.getElementById('cap-status').value;
+  const f=trainingEmployees.filter(e=>(!s||e.name.toLowerCase().includes(s))&&(!st||e.status===st));
+  renderTraining(f);
+}
+
+function renderAll(){
+  renderDashboard();
+  renderEmployees();
+  renderFired();
+  renderBlacklist();
+  renderTraining();
+}
+
+function saveData(){
+  const d={employees:allEmployees,fired:firedEmployees,blacklist:blacklistEmployees,transferred:transferredEmployees,training:trainingEmployees};
+  localStorage.setItem('hrData',JSON.stringify(d));
+}
+
+function populateFilters(){
+  ['emp-project','fired-project'].forEach(id=>{
+    const s=document.getElementById(id);
+    if(!s)return;
+    PROJECTS.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name;s.appendChild(o);});
+  });
+}
+
+function init(){
+  document.getElementById('loading').style.display='none';
+  populateFilters();
+  initAdminState();
+  renderAll();
+  const t=['dashboard','training','employees','fired','blacklist'];
+  const st=localStorage.getItem('hrTab')||'dashboard';
+  const ti=t.indexOf(st);
+  const bt=document.querySelectorAll('.topbar-btn');
+  if(ti>=0&&bt[ti])showPage(st,bt[ti]);
+  else showPage('dashboard',bt[0]);
+}
+
+function loadData(){
+  const sd=localStorage.getItem('hrData');
+  if(sd){
+    try{
+      const d=JSON.parse(sd);
+      allEmployees=d.employees||[];
+      firedEmployees=d.fired||[];
+      blacklistEmployees=d.blacklist||[];
+      transferredEmployees=d.transferred||[];
+      trainingEmployees=d.training||[];
+      init();
+      return;
+    }catch(e){console.error('Error localStorage:',e);}
+  }
+  fetch('data.json?t='+Date.now()+'&r='+Math.random()).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>{
+    allEmployees=d.employees||[];
+    firedEmployees=d.fired||[];
+    blacklistEmployees=d.blacklist||[];
+    transferredEmployees=d.transferred||[];
+    trainingEmployees=d.training||[];
+    init();
+  }).catch(e=>{console.error('Error cargando:',e);document.getElementById('loading').textContent='Error cargando datos. Recarga la pagina.';});
+}
+
+loadData();
+</script>
+</body>
+</html>
